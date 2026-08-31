@@ -1,10 +1,9 @@
 -- =====================================================================
 -- Đề án CS Data - Schema Supabase (PostgreSQL)
--- Chạy toàn bộ file này trong Supabase Dashboard > SQL Editor > New query
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
--- 1. BẢNG DỮ LIỆU PHIM (đã làm sạch bởi pipeline ETL)
+-- 1. BẢNG DỮ LIỆU PHIM
 -- ---------------------------------------------------------------------
 drop table if exists public.movies cascade;
 
