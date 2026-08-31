@@ -14,16 +14,28 @@ except ImportError:  # python-dotenv là tùy chọn khi chạy trên Streamlit 
     pass
 
 
+def _is_placeholder(value: str) -> bool:
+    """Nhận diện giá trị mẫu chưa được thay bằng khóa thật."""
+    return value.endswith("...") or "xxxx" in value.lower()
+
+
 def _read(key: str, default: str = "") -> str:
-    """Ưu tiên st.secrets (Streamlit Cloud), sau đó tới biến môi trường (.env)."""
+    """Ưu tiên st.secrets (Streamlit Cloud), sau đó tới biến môi trường (.env).
+
+    Giá trị còn nguyên dạng mẫu trong .env.example được coi như chưa khai báo, để app
+    báo "chưa cấu hình" ngay từ đầu thay vì báo lỗi khi đã gọi tới dịch vụ.
+    """
+    value = default
     try:
         import streamlit as st
 
         if key in st.secrets:
-            return str(st.secrets[key])
+            value = str(st.secrets[key])
     except Exception:
         pass
-    return os.getenv(key, default)
+    if value == default:
+        value = os.getenv(key, default)
+    return "" if _is_placeholder(value) else value
 
 
 @dataclass(frozen=True)

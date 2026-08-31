@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from movie_analytics.config import get_settings
@@ -26,6 +27,9 @@ SYNC_COLUMNS = [
     "country", "company", "runtime", "budget", "gross", "budget_real", "gross_real",
     "profit_real", "multiple", "roi", "has_financials", "is_profitable_real", "budget_tier",
 ]
+
+# Các cột khai kiểu integer trong sql/schema.sql.
+INT_COLUMNS = ["year", "year_reported", "release_month", "decade"]
 
 
 class SupabaseUnavailable(RuntimeError):
@@ -62,6 +66,13 @@ def _prepare_for_upload(df: pd.DataFrame) -> list[dict]:
     out = df[[c for c in SYNC_COLUMNS if c in df.columns]].copy()
     out["release_date"] = out["release_date"].dt.strftime("%Y-%m-%d")
     out["budget_tier"] = out["budget_tier"].astype("string")
+
+    # Cột nào khai integer trong schema thì phải gửi số nguyên. Pandas ép các cột này
+    # thành float khi có giá trị thiếu, khiến PostgREST từ chối giá trị dạng "6.0".
+    for column in INT_COLUMNS:
+        if column in out:
+            out[column] = out[column].astype("Int64")
+
     out = out.astype(object).where(pd.notna(out), None)
     return json.loads(json.dumps(out.to_dict(orient="records"), default=str))
 
@@ -96,6 +107,23 @@ def fetch_movies_from_supabase(page_size: int = 1000) -> pd.DataFrame:
 
     df = pd.concat(frames, ignore_index=True)
     df["release_date"] = pd.to_datetime(df["release_date"], errors="coerce")
+    return restore_derived_columns(df)
+
+
+def restore_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Tính lại các cột phái sinh rẻ thay vì lưu chúng trên Supabase.
+
+    Bảng `movies` chỉ lưu dữ kiện; các cột suy ra được từ dữ kiện đó (cờ nhị phân,
+    biến logarit) được dựng lại khi đọc để bảng gọn và tránh dữ liệu mâu thuẫn.
+    """
+    if "multiple" in df:
+        df["is_profitable_naive"] = df["multiple"] > 1
+    if {"year", "year_reported"} <= set(df.columns):
+        df["year_mismatch"] = df["year"] != df["year_reported"]
+    for source, target in [("budget_real", "log_budget"), ("gross_real", "log_gross"),
+                           ("votes", "log_votes")]:
+        if source in df:
+            df[target] = np.log10(df[source].where(df[source] > 0))
     return df
 
 
