@@ -1,0 +1,12 @@
+.env
+.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+myenv/
+outputs/*.xlsx
+outputs/*.parquet
+outputs/*.csv
+.ipynb_checkpoints/
+.DS_Store
