@@ -34,8 +34,8 @@ with right:
 
     if not settings.supabase_ready:
         st.warning(
-            "Chưa cấu hình Supabase. Bạn vẫn có thể vào bằng chế độ khách để xem "
-            "toàn bộ phần phân tích.",
+            "Hệ thống tài khoản hiện chưa sẵn sàng. Bạn vẫn có thể vào bằng chế độ "
+            "khách để xem toàn bộ phần phân tích.",
             icon="⚠️",
         )
 

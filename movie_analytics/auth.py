@@ -98,7 +98,7 @@ def require_login() -> dict:
 def require_account() -> dict:
     user = require_login()
     if user.get("is_guest"):
-        st.info("Chức năng này cần tài khoản Supabase. Bạn đang ở chế độ khách.")
+        st.info("Chức năng này cần đăng nhập bằng tài khoản. Bạn đang ở chế độ khách.")
         st.stop()
     return user
 

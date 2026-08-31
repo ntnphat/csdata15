@@ -84,7 +84,7 @@ st.divider()
 st.subheader("Bộ lọc đã lưu / Saved views")
 
 if is_guest():
-    st.info("Đăng nhập bằng tài khoản Supabase để lưu lại bộ lọc phân tích.", icon="🔐")
+    st.info("Đăng nhập bằng tài khoản để lưu lại bộ lọc phân tích.", icon="🔐")
 else:
     user = current_user()
     col_name, col_save = st.columns([3, 1])

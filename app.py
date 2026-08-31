@@ -54,7 +54,7 @@ def main() -> None:
     _sidebar_account()
 
     if current_user() and not settings.supabase_ready:
-        st.sidebar.warning("Chưa cấu hình Supabase - app đang chạy trên dữ liệu cục bộ.", icon="⚠️")
+        st.sidebar.caption("Đang chạy trên dữ liệu cục bộ.")
 
     navigation.run()
 

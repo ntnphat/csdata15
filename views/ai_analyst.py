@@ -20,8 +20,8 @@ st.caption(
 
 if not ai.is_available():
     st.warning(
-        "Chưa cấu hình `OPENAI_API_KEY` hoặc chưa cài `langchain-openai`. "
-        "Bạn vẫn xem được ngữ cảnh số liệu mà trợ lý sẽ sử dụng ở phần bên dưới.",
+        "Trợ lý AI hiện chưa sẵn sàng. Bạn vẫn xem được toàn bộ số liệu mà trợ lý "
+        "sử dụng ở phần bên dưới.",
         icon="🔑",
     )
 

@@ -120,14 +120,13 @@ def _build_chain(template: str):
 
 def ask(df: pd.DataFrame, question: str, context: str = None) -> str:
     if not is_available():
-        return ("Chưa cấu hình OPENAI_API_KEY hoặc chưa cài langchain-openai. "
-                "Vui lòng bổ sung để dùng trợ lý AI.")
+        return "Trợ lý AI hiện chưa sẵn sàng."
     chain = _build_chain(ANSWER_TEMPLATE)
     return chain.invoke({"context": context or build_context(df), "question": question})
 
 
 def executive_summary(df: pd.DataFrame, context: str = None) -> str:
     if not is_available():
-        return "Chưa cấu hình OPENAI_API_KEY nên không thể sinh tóm tắt tự động."
+        return "Trợ lý AI hiện chưa sẵn sàng nên chưa sinh được tóm tắt."
     chain = _build_chain(SUMMARY_TEMPLATE)
     return chain.invoke({"context": context or build_context(df)})
