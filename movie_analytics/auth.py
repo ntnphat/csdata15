@@ -37,7 +37,11 @@ def sign_up(email: str, password: str, full_name: str = "") -> tuple[bool, str]:
 
     if response.user is None:
         return False, "Đăng ký thất bại. Vui lòng kiểm tra lại email/mật khẩu."
-    return True, "Đăng ký thành công. Hãy xác nhận email (nếu được bật) rồi đăng nhập."
+
+    # Supabase tra ve session ngay khi khong bat xac nhan email.
+    if response.session is not None:
+        return True, "Đăng ký thành công. Bạn có thể đăng nhập ngay."
+    return True, "Đăng ký thành công. Vui lòng mở email để xác nhận tài khoản."
 
 
 def sign_in(email: str, password: str) -> tuple[bool, str]:
