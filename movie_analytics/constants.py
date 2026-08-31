@@ -1,5 +1,3 @@
-"""Hằng số dùng chung: đường dẫn, cấu hình cột, bảng CPI, nhóm ngân sách."""
-
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -9,15 +7,13 @@ RAW_CSV = DATA_DIR / "movies.csv"
 CLEAN_PARQUET = OUTPUT_DIR / "movies_clean.parquet"
 CLEAN_CSV = OUTPUT_DIR / "movies_clean.csv"
 
-BASE_YEAR = 2020  # Năm gốc quy đổi tiền tệ về giá thực (real USD)
+BASE_YEAR = 2020
 
 RAW_COLUMNS = [
     "name", "rating", "genre", "year", "released", "score", "votes",
     "director", "writer", "star", "country", "budget", "gross", "company", "runtime",
 ]
 
-# Chỉ số giá tiêu dùng Mỹ (CPI-U, all items, annual average, 1982-84 = 100).
-# Nguồn: U.S. Bureau of Labor Statistics. Dùng để khử lạm phát cho budget/gross.
 CPI_US = {
     1980: 82.4, 1981: 90.9, 1982: 96.5, 1983: 99.6, 1984: 103.9,
     1985: 107.6, 1986: 109.6, 1987: 113.6, 1988: 118.3, 1989: 124.0,
@@ -30,7 +26,6 @@ CPI_US = {
     2020: 258.811,
 }
 
-# Gom nhãn phân loại độ tuổi rời rạc về 5 nhóm có ý nghĩa thương mại.
 RATING_MAP = {
     "G": "G", "PG": "PG", "PG-13": "PG-13", "R": "R",
     "NC-17": "NC-17/X", "X": "NC-17/X",
@@ -39,11 +34,9 @@ RATING_MAP = {
 }
 RATING_ORDER = ["G", "PG", "PG-13", "R", "NC-17/X", "Unrated"]
 
-# Phân tầng ngân sách theo giá thực 2020 (đơn vị: triệu USD).
 BUDGET_BINS = [0, 5e6, 20e6, 50e6, 100e6, float("inf")]
 BUDGET_LABELS = ["Micro (<5M)", "Low (5-20M)", "Mid (20-50M)", "High (50-100M)", "Blockbuster (>100M)"]
 
-# Mùa phát hành - các cửa sổ phát hành có ý nghĩa trong ngành.
 SEASON_MAP = {
     1: "Q1 - Dump months", 2: "Q1 - Dump months", 3: "Spring",
     4: "Spring", 5: "Summer blockbuster", 6: "Summer blockbuster",
@@ -52,4 +45,4 @@ SEASON_MAP = {
 }
 SEASON_ORDER = ["Q1 - Dump months", "Spring", "Summer blockbuster", "Late summer", "Fall - Awards", "Holiday"]
 
-MIN_TITLES_FOR_RANKING = 5  # Ngưỡng số phim tối thiểu để xếp hạng người/hãng
+MIN_TITLES_FOR_RANKING = 5

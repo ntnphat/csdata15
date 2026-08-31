@@ -1,9 +1,3 @@
-"""Xác thực người dùng qua Supabase Auth, trạng thái lưu trong st.session_state.
-
-Khi chưa cấu hình Supabase, app chuyển sang chế độ khách (guest) để vẫn xem được
-toàn bộ phần phân tích; các tính năng cần lưu trữ theo người dùng sẽ bị khóa.
-"""
-
 from __future__ import annotations
 
 import streamlit as st
@@ -16,7 +10,6 @@ GUEST_USER = {"id": "guest", "email": "guest@local", "full_name": "Khách / Gues
 
 
 def current_user() -> dict | None:
-    """Người dùng đang đăng nhập, None nếu chưa đăng nhập."""
     return st.session_state.get(SESSION_USER)
 
 
@@ -31,7 +24,6 @@ def login_as_guest() -> None:
 
 
 def sign_up(email: str, password: str, full_name: str = "") -> tuple[bool, str]:
-    """Đăng ký tài khoản mới. Trả về (thành công, thông báo)."""
     try:
         client = get_client()
         response = client.auth.sign_up(
@@ -48,7 +40,6 @@ def sign_up(email: str, password: str, full_name: str = "") -> tuple[bool, str]:
 
 
 def sign_in(email: str, password: str) -> tuple[bool, str]:
-    """Đăng nhập bằng email/mật khẩu và lưu phiên vào session_state."""
     try:
         client = get_client()
         response = client.auth.sign_in_with_password({"email": email, "password": password})
@@ -73,13 +64,12 @@ def sign_in(email: str, password: str) -> tuple[bool, str]:
         upsert_profile(authed_client(), response.user.id, response.user.email,
                        metadata.get("full_name", ""))
     except Exception:
-        pass  # Hồ sơ có thể đã được trigger phía Supabase tạo sẵn.
+        pass
 
     return True, "Đăng nhập thành công."
 
 
 def sign_out() -> None:
-    """Đăng xuất và xóa toàn bộ dấu vết phiên làm việc."""
     try:
         get_client().auth.sign_out()
     except Exception:
@@ -89,7 +79,6 @@ def sign_out() -> None:
 
 
 def authed_client():
-    """Client gắn access token của người dùng để RLS trên Supabase hoạt động."""
     client = get_client()
     token = st.session_state.get(SESSION_TOKEN)
     if token:
@@ -98,7 +87,6 @@ def authed_client():
 
 
 def require_login() -> dict:
-    """Chặn nội dung nếu chưa đăng nhập. Trả về thông tin người dùng."""
     user = current_user()
     if user is None:
         st.warning("Vui lòng đăng nhập để sử dụng chức năng này.")
@@ -107,7 +95,6 @@ def require_login() -> dict:
 
 
 def require_account() -> dict:
-    """Yêu cầu tài khoản thật (không phải khách) cho các chức năng cần lưu trữ."""
     user = require_login()
     if user.get("is_guest"):
         st.info("Chức năng này cần tài khoản Supabase. Bạn đang ở chế độ khách.")

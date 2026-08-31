@@ -1,5 +1,3 @@
-"""Xuất báo cáo Excel nhiều sheet bằng Openpyxl, kèm định dạng và biểu đồ ảnh."""
-
 from __future__ import annotations
 
 from io import BytesIO
@@ -46,7 +44,6 @@ def _autosize(ws, df: pd.DataFrame, start_col: int = 1, max_width: int = 32) -> 
 
 
 def _write_table(ws, df: pd.DataFrame, title: str, start_row: int = 1) -> int:
-    """Ghi một bảng có tiêu đề, trả về dòng kế tiếp còn trống."""
     ws.cell(row=start_row, column=1, value=title).font = TITLE_FONT
     header_row = start_row + 1
 
@@ -100,7 +97,6 @@ def _write_kpi_sheet(ws, df: pd.DataFrame, summary_text: str = "") -> None:
 
 
 def _insert_chart(ws, fig, anchor: str) -> None:
-    """Chèn Figure của Matplotlib vào sheet dưới dạng ảnh PNG."""
     buffer = BytesIO()
     fig.savefig(buffer, format="png", dpi=130, bbox_inches="tight")
     buffer.seek(0)
@@ -110,7 +106,6 @@ def _insert_chart(ws, fig, anchor: str) -> None:
 def build_excel_report(df: pd.DataFrame, raw: pd.DataFrame = None,
                        summary_text: str = "", include_charts: bool = True,
                        detail_rows: int = 2000) -> BytesIO:
-    """Tạo file Excel báo cáo hoàn chỉnh, trả về buffer để Streamlit tải xuống."""
     wb = Workbook()
 
     _write_kpi_sheet(wb.active, df, summary_text)

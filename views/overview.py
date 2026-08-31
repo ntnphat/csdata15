@@ -1,5 +1,3 @@
-"""Trang tổng quan: KPI, xu hướng theo thời gian và mức độ tập trung lợi nhuận."""
-
 import streamlit as st
 
 from movie_analytics import charts, metrics

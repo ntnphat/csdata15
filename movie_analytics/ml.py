@@ -1,9 +1,3 @@
-"""Mô hình dự báo doanh thu phòng vé từ các thông tin biết được TRƯỚC khi phát hành.
-
-Nguyên tắc: chỉ dùng biến có sẵn ở thời điểm ra quyết định đầu tư. Vì vậy `score`
-và `votes` bị loại - đây là dữ liệu chỉ hình thành sau khi phim ra rạp (data leakage).
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -20,6 +14,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 TARGET = "log_gross"
+# Khong dua score va votes vao: hai bien nay chi co sau khi phim ra rap.
 NUMERIC_FEATURES = ["log_budget", "runtime", "year", "release_month",
                     "director_track", "star_track", "company_track"]
 CATEGORICAL_FEATURES = ["genre", "rating_group", "season", "is_us"]
@@ -28,7 +23,6 @@ SPLIT_YEAR = 2015  # Huấn luyện trên quá khứ, kiểm định trên tươ
 
 @dataclass
 class ModelResult:
-    """Kết quả huấn luyện của một mô hình."""
 
     name: str
     pipeline: Pipeline
@@ -42,19 +36,15 @@ class ModelResult:
 
 
 def _expanding_track_record(df: pd.DataFrame, key: str) -> pd.Series:
-    """Thành tích trung bình của các phim TRƯỚC ĐÓ của cùng đạo diễn/diễn viên/hãng.
-
-    Dùng expanding mean rồi shift(1) để không lấy chính bộ phim đang dự báo.
-    """
     ordered = df.sort_values("release_date")
     track = ordered.groupby(key, observed=True)[TARGET].transform(
+        # shift(1) de khong lay chinh bo phim dang du bao
         lambda s: s.expanding().mean().shift(1)
     )
     return track.reindex(df.index)
 
 
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Tạo bảng đặc trưng cho mô hình từ dữ liệu đã làm sạch."""
     data = df[df["has_financials"] & df["release_date"].notna()].copy()
     data = data[data["gross_real"] > 0]
 
@@ -69,7 +59,6 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _make_pipeline(estimator) -> Pipeline:
-    """Ghép bước tiền xử lý và mô hình thành một pipeline duy nhất."""
     numeric = Pipeline([("impute", SimpleImputer(strategy="median")), ("scale", StandardScaler())])
     categorical = Pipeline(
         [
@@ -84,7 +73,6 @@ def _make_pipeline(estimator) -> Pipeline:
 
 
 def time_split(features: pd.DataFrame, split_year: int = SPLIT_YEAR):
-    """Chia dữ liệu theo mốc thời gian thay vì ngẫu nhiên, đúng bản chất bài toán."""
     train = features[features["year"] < split_year]
     test = features[features["year"] >= split_year]
     x_cols = NUMERIC_FEATURES + CATEGORICAL_FEATURES
@@ -92,7 +80,6 @@ def time_split(features: pd.DataFrame, split_year: int = SPLIT_YEAR):
 
 
 def train_models(features: pd.DataFrame, split_year: int = SPLIT_YEAR) -> list[ModelResult]:
-    """Huấn luyện Ridge (nền) và Random Forest (phi tuyến), so sánh trên tập kiểm định."""
     x_train, y_train, x_test, y_test = time_split(features, split_year)
 
     candidates = {
@@ -106,7 +93,6 @@ def train_models(features: pd.DataFrame, split_year: int = SPLIT_YEAR) -> list[M
     for name, estimator in candidates.items():
         pipeline = _make_pipeline(estimator).fit(x_train, y_train)
         y_pred = pipeline.predict(x_test)
-        # Sai số quy về bội số: 10^MAE cho biết dự báo lệch trung bình bao nhiêu lần.
         results.append(
             ModelResult(
                 name=name,
@@ -125,7 +111,6 @@ def train_models(features: pd.DataFrame, split_year: int = SPLIT_YEAR) -> list[M
 
 def feature_importance(result: ModelResult, features: pd.DataFrame,
                        split_year: int = SPLIT_YEAR, top_n: int = 12) -> pd.DataFrame:
-    """Độ quan trọng theo hoán vị - so sánh được giữa mọi loại mô hình."""
     _, _, x_test, y_test = time_split(features, split_year)
     scores = permutation_importance(
         result.pipeline, x_test, y_test, n_repeats=5, random_state=42, n_jobs=-1
@@ -137,7 +122,6 @@ def feature_importance(result: ModelResult, features: pd.DataFrame,
 
 
 def predict_single(result: ModelResult, payload: dict) -> dict:
-    """Dự báo doanh thu cho một kịch bản phim do người dùng nhập."""
     frame = pd.DataFrame([payload])
     log_pred = float(result.pipeline.predict(frame)[0])
     gross = 10 ** log_pred

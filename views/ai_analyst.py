@@ -1,5 +1,3 @@
-"""Trang trợ lý AI: hỏi đáp trên số liệu đã tổng hợp bằng LangChain + OpenAI."""
-
 import streamlit as st
 
 from movie_analytics import ai

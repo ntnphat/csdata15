@@ -1,5 +1,3 @@
-"""Trang phân tích chuyên sâu: thể loại, ngân sách, phân loại tuổi, mùa, chất lượng."""
-
 import streamlit as st
 
 from movie_analytics import charts, metrics
@@ -27,7 +25,6 @@ tabs = st.tabs([
     "Tương quan / Correlation",
 ])
 
-# --- Thể loại -------------------------------------------------------------
 with tabs[0]:
     st.subheader("Bản đồ rủi ro - lợi nhuận theo thể loại")
     risk = metrics.risk_return_table(df, "genre", min_count=20)
@@ -46,7 +43,6 @@ with tabs[0]:
         )
         show_table(risk.round(2), height=340)
 
-# --- Ngân sách ------------------------------------------------------------
 with tabs[1]:
     st.subheader("Hiệu quả theo tầng ngân sách")
     tier = metrics.group_performance(df, "budget_tier", min_count=10)
@@ -75,7 +71,6 @@ with tabs[1]:
         )
         show_table(tier_ordered.round(2), height=250)
 
-# --- Phân loại tuổi -------------------------------------------------------
 with tabs[2]:
     st.subheader("Hiệu quả theo nhãn phân loại độ tuổi")
     rating = metrics.group_performance(df, "rating_group", min_count=10)
@@ -99,7 +94,6 @@ with tabs[2]:
         )
         show_table(rating_ordered.round(2), height=250)
 
-# --- Mùa phát hành --------------------------------------------------------
 with tabs[3]:
     st.subheader("Hiệu quả theo cửa sổ phát hành")
     season = metrics.group_performance(df, "season", min_count=10)
@@ -120,7 +114,6 @@ with tabs[3]:
         )
         show_table(season_ordered.round(2), height=250)
 
-# --- Chất lượng vs tiền ---------------------------------------------------
 with tabs[4]:
     st.subheader("Điểm IMDb có đi cùng lợi nhuận không?")
     bands = metrics.score_vs_money(df)
@@ -142,7 +135,6 @@ with tabs[4]:
             icon="🧠",
         )
 
-# --- Tương quan -----------------------------------------------------------
 with tabs[5]:
     st.subheader("Ma trận tương quan giữa các biến định lượng")
     corr = metrics.correlation_matrix(df)

@@ -1,5 +1,3 @@
-"""Điểm vào của ứng dụng Streamlit - điều hướng và kiểm soát đăng nhập."""
-
 from __future__ import annotations
 
 import streamlit as st
@@ -27,7 +25,6 @@ PAGES = [
 
 
 def _sidebar_account() -> None:
-    """Khối thông tin tài khoản ở cuối sidebar."""
     user = current_user()
     if not user:
         return

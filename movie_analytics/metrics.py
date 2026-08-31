@@ -1,5 +1,3 @@
-"""Các hàm tính chỉ số (KPI) và bảng tổng hợp dùng chung cho app và báo cáo."""
-
 from __future__ import annotations
 
 import numpy as np
@@ -13,12 +11,10 @@ NUMERIC_FOR_CORR = ["budget_real", "gross_real", "profit_real", "score", "votes"
 
 
 def financial_subset(df: pd.DataFrame) -> pd.DataFrame:
-    """Chỉ giữ phim có đủ budget và gross - nền tảng cho mọi phân tích tài chính."""
     return df[df["has_financials"]].copy()
 
 
 def kpi_summary(df: pd.DataFrame) -> dict:
-    """Bộ KPI tổng quan hiển thị ở đầu dashboard."""
     fin = financial_subset(df)
     return {
         "titles": len(df),
@@ -39,7 +35,6 @@ def kpi_summary(df: pd.DataFrame) -> dict:
 
 
 def group_performance(df: pd.DataFrame, by: str, min_count: int = 1) -> pd.DataFrame:
-    """Bảng hiệu quả theo nhóm: quy mô, doanh thu, ROI trung vị và tỷ lệ hòa vốn."""
     fin = financial_subset(df)
     if fin.empty:
         return pd.DataFrame()
@@ -60,7 +55,6 @@ def group_performance(df: pd.DataFrame, by: str, min_count: int = 1) -> pd.DataF
 
 
 def yearly_trend(df: pd.DataFrame) -> pd.DataFrame:
-    """Diễn biến ngân sách, doanh thu và tỷ lệ hòa vốn theo từng năm."""
     fin = financial_subset(df)
     trend = fin.groupby("year", observed=True).agg(
         titles=("name", "count"),
@@ -76,14 +70,12 @@ def yearly_trend(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def correlation_matrix(df: pd.DataFrame, columns=None) -> pd.DataFrame:
-    """Ma trận tương quan Pearson giữa các biến định lượng chính."""
     columns = columns or NUMERIC_FOR_CORR
     fin = financial_subset(df)
     return fin[columns].corr(numeric_only=True)
 
 
 def pareto_concentration(df: pd.DataFrame, steps=(0.01, 0.05, 0.10, 0.20, 0.50)) -> pd.DataFrame:
-    """Mức độ tập trung lợi nhuận: top x% phim tạo ra bao nhiêu % tổng lợi nhuận."""
     fin = financial_subset(df).sort_values("profit_real", ascending=False)
     if fin.empty:
         return pd.DataFrame()
@@ -108,7 +100,6 @@ def pareto_concentration(df: pd.DataFrame, steps=(0.01, 0.05, 0.10, 0.20, 0.50))
 def top_entities(df: pd.DataFrame, by: str, metric: str = "median_multiple",
                  min_titles: int = MIN_TITLES_FOR_RANKING, top_n: int = 15,
                  ascending: bool = False) -> pd.DataFrame:
-    """Xếp hạng đạo diễn / diễn viên / hãng phim, có ngưỡng số phim tối thiểu."""
     table = group_performance(df, by=by, min_count=min_titles)
     if table.empty or metric not in table:
         return table
@@ -116,7 +107,6 @@ def top_entities(df: pd.DataFrame, by: str, metric: str = "median_multiple",
 
 
 def missing_budget_profile(df: pd.DataFrame) -> pd.DataFrame:
-    """So sánh nhóm thiếu budget và nhóm có budget để kiểm tra thiếu ngẫu nhiên (MCAR)."""
     df = df.copy()
     df["nhóm / group"] = np.where(df["budget_real"].isna(), "Thiếu budget / Missing", "Có budget / Present")
     profile = df.groupby("nhóm / group", observed=True).agg(
@@ -131,7 +121,6 @@ def missing_budget_profile(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def score_vs_money(df: pd.DataFrame, bins=(0, 5, 6, 7, 8, 10)) -> pd.DataFrame:
-    """Điểm IMDb có đi cùng hiệu quả tài chính không?"""
     fin = financial_subset(df)
     labels = [f"{bins[i]}-{bins[i + 1]}" for i in range(len(bins) - 1)]
     fin = fin.assign(score_band=pd.cut(fin["score"], bins=list(bins), labels=labels, right=False))
@@ -147,7 +136,6 @@ def score_vs_money(df: pd.DataFrame, bins=(0, 5, 6, 7, 8, 10)) -> pd.DataFrame:
 
 
 def risk_return_table(df: pd.DataFrame, by: str = "genre", min_count: int = 20) -> pd.DataFrame:
-    """Ma trận rủi ro - lợi nhuận: kỳ vọng (trung vị) và độ phân tán của bội số thu hồi vốn."""
     fin = financial_subset(df)
     table = fin.groupby(by, observed=True).agg(
         titles=("name", "count"),

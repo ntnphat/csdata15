@@ -1,5 +1,3 @@
-"""Cấu hình tập trung: đọc thông tin kết nối từ st.secrets hoặc biến môi trường."""
-
 from __future__ import annotations
 
 import os
@@ -15,16 +13,10 @@ except ImportError:  # python-dotenv là tùy chọn khi chạy trên Streamlit 
 
 
 def _is_placeholder(value: str) -> bool:
-    """Nhận diện giá trị mẫu chưa được thay bằng khóa thật."""
     return value.endswith("...") or "xxxx" in value.lower()
 
 
 def _read(key: str, default: str = "") -> str:
-    """Ưu tiên st.secrets (Streamlit Cloud), sau đó tới biến môi trường (.env).
-
-    Giá trị còn nguyên dạng mẫu trong .env.example được coi như chưa khai báo, để app
-    báo "chưa cấu hình" ngay từ đầu thay vì báo lỗi khi đã gọi tới dịch vụ.
-    """
     value = default
     try:
         import streamlit as st
@@ -44,6 +36,7 @@ class Settings:
     supabase_anon_key: str
     supabase_service_key: str
     openai_api_key: str
+    openai_base_url: str
     openai_model: str
     openai_embedding_model: str
     app_env: str
@@ -64,6 +57,7 @@ def get_settings() -> Settings:
         supabase_anon_key=_read("SUPABASE_ANON_KEY"),
         supabase_service_key=_read("SUPABASE_SERVICE_KEY"),
         openai_api_key=_read("OPENAI_API_KEY"),
+        openai_base_url=_read("OPENAI_BASE_URL"),
         openai_model=_read("OPENAI_MODEL", "gpt-4o-mini"),
         openai_embedding_model=_read("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
         app_env=_read("APP_ENV", "local"),

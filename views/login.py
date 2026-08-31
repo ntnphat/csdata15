@@ -1,5 +1,3 @@
-"""Trang đăng nhập / đăng ký qua Supabase Auth."""
-
 import streamlit as st
 
 from movie_analytics.auth import login_as_guest, sign_in, sign_up

@@ -1,5 +1,3 @@
-"""Trang xếp hạng đạo diễn, diễn viên, hãng phim và các phim tiêu biểu."""
-
 import streamlit as st
 
 from movie_analytics import charts, metrics
@@ -76,7 +74,6 @@ with tab_profit:
 with tab_loss:
     show_table(fin.nsmallest(20, "profit_real")[columns].round(2))
 with tab_roi:
-    # Lọc ngân sách tối thiểu 1 triệu USD để loại các trường hợp ROI ảo do mẫu số quá nhỏ.
     meaningful = fin[fin["budget_real"] >= 1e6]
     show_table(meaningful.nlargest(20, "multiple")[columns].round(2))
     st.caption("Đã loại phim có ngân sách dưới 1 triệu USD vì mẫu số quá nhỏ làm ROI mất ý nghĩa.")

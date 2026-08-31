@@ -1,4 +1,3 @@
-"""Chay thu tung trang bang Streamlit AppTest de bat loi runtime."""
 import sys
 from streamlit.testing.v1 import AppTest
 

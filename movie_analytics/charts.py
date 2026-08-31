@@ -1,5 +1,3 @@
-"""Các hàm vẽ biểu đồ bằng Matplotlib/Seaborn, trả về Figure cho Streamlit."""
-
 from __future__ import annotations
 
 import matplotlib
@@ -17,7 +15,6 @@ GRID = "#d9dde3"
 
 
 def apply_theme() -> None:
-    """Thiết lập style thống nhất cho toàn bộ biểu đồ."""
     sns.set_theme(style="whitegrid", context="notebook")
     plt.rcParams.update(
         {
@@ -33,7 +30,6 @@ def apply_theme() -> None:
 
 
 def money_formatter(x, _pos=None):
-    """Định dạng trục tiền tệ theo triệu/tỷ USD."""
     if abs(x) >= 1e9:
         return f"${x / 1e9:.1f}B"
     return f"${x / 1e6:.0f}M"
@@ -45,7 +41,6 @@ def _new_fig(width=7.0, height=4.0):
 
 
 def missing_values_chart(report: pd.DataFrame):
-    """Biểu đồ cột tỷ lệ thiếu dữ liệu theo từng cột."""
     data = report[report["% thiếu / % missing"] > 0]
     fig, ax = _new_fig(7, max(2.5, 0.45 * len(data) + 1))
     sns.barplot(data=data, y="Cột / Column", x="% thiếu / % missing", ax=ax, color=WARN)
@@ -58,7 +53,6 @@ def missing_values_chart(report: pd.DataFrame):
 
 
 def correlation_heatmap(corr: pd.DataFrame):
-    """Heatmap tương quan Pearson giữa các biến định lượng."""
     fig, ax = _new_fig(6.5, 5)
     mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
     sns.heatmap(corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu_r", center=0,
@@ -68,7 +62,6 @@ def correlation_heatmap(corr: pd.DataFrame):
 
 
 def budget_vs_gross_scatter(df: pd.DataFrame, hue: str = "rating_group"):
-    """Scatter ngân sách - doanh thu trên thang log, kèm đường hòa vốn 1x và 2x."""
     fin = df[df["has_financials"]]
     fig, ax = _new_fig(7, 4.8)
     sns.scatterplot(data=fin, x="budget_real", y="gross_real", hue=hue,
@@ -89,7 +82,6 @@ def budget_vs_gross_scatter(df: pd.DataFrame, hue: str = "rating_group"):
 
 def group_bar(table: pd.DataFrame, x: str, y: str, title: str, xlabel: str = "",
               ylabel: str = "", fmt: str = "%.2f", horizontal: bool = True, color=ACCENT):
-    """Biểu đồ cột tổng quát dùng cho các bảng tổng hợp theo nhóm."""
     fig, ax = _new_fig(7, max(3, 0.42 * len(table) + 1.4))
     if horizontal:
         sns.barplot(data=table, y=x, x=y, ax=ax, color=color)
@@ -107,7 +99,6 @@ def group_bar(table: pd.DataFrame, x: str, y: str, title: str, xlabel: str = "",
 
 
 def risk_return_scatter(table: pd.DataFrame, label_col: str = "genre"):
-    """Bản đồ rủi ro - lợi nhuận: trục X là tỷ lệ lỗ, trục Y là bội số thu hồi vốn."""
     fig, ax = _new_fig(7, 4.8)
     sizes = table["median_budget"] / table["median_budget"].max() * 500 + 40
     ax.scatter(table["loss_rate"], table["median_multiple"], s=sizes,
@@ -127,7 +118,6 @@ def risk_return_scatter(table: pd.DataFrame, label_col: str = "genre"):
 
 
 def trend_lines(trend: pd.DataFrame):
-    """Diễn biến ngân sách/doanh thu trung vị và tỷ lệ hòa vốn theo năm."""
     apply_theme()
     fig, axes = plt.subplots(2, 1, figsize=(7.4, 6), sharex=True)
 
@@ -148,7 +138,6 @@ def trend_lines(trend: pd.DataFrame):
 
 
 def distribution_plot(df: pd.DataFrame, column: str, title: str, log: bool = False):
-    """Histogram kèm KDE cho một biến định lượng."""
     series = df[column].dropna()
     if log:
         series = np.log10(series[series > 0])
@@ -161,7 +150,6 @@ def distribution_plot(df: pd.DataFrame, column: str, title: str, log: bool = Fal
 
 
 def pareto_chart(pareto: pd.DataFrame):
-    """Biểu đồ mức độ tập trung doanh thu và lợi nhuận theo nhóm phim dẫn đầu."""
     fig, ax = _new_fig(7, 4)
     idx = np.arange(len(pareto))
     ax.bar(idx - 0.2, pareto["% tổng doanh thu / % of gross"], width=0.4,
@@ -181,7 +169,6 @@ def pareto_chart(pareto: pd.DataFrame):
 
 def boxplot_by_group(df: pd.DataFrame, group: str, value: str, title: str,
                      order=None, clip: float = 10.0):
-    """Boxplot phân bố giá trị theo nhóm, cắt đuôi trên để biểu đồ dễ đọc."""
     fin = df[df["has_financials"]].copy()
     if clip:
         fin = fin[fin[value] <= clip]
@@ -195,7 +182,6 @@ def boxplot_by_group(df: pd.DataFrame, group: str, value: str, title: str,
 
 
 def feature_importance_chart(importances: pd.DataFrame):
-    """Mức độ đóng góp của từng biến trong mô hình dự báo."""
     fig, ax = _new_fig(7, max(3, 0.4 * len(importances) + 1.2))
     sns.barplot(data=importances, y="feature", x="importance", ax=ax, color=ACCENT)
     ax.set_title("Mức độ quan trọng của biến / Feature importance")
@@ -207,7 +193,6 @@ def feature_importance_chart(importances: pd.DataFrame):
 
 
 def prediction_scatter(y_true, y_pred):
-    """So sánh giá trị thực và giá trị dự báo (thang log10)."""
     fig, ax = _new_fig(6, 4.6)
     ax.scatter(y_true, y_pred, alpha=0.35, s=16, color=ACCENT, edgecolor="none")
     lims = [min(np.min(y_true), np.min(y_pred)), max(np.max(y_true), np.max(y_pred))]

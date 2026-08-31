@@ -1,5 +1,3 @@
-"""Trang đánh giá chất lượng dữ liệu và các thiên lệch cần lưu ý khi đọc báo cáo."""
-
 import streamlit as st
 
 from movie_analytics import charts, metrics

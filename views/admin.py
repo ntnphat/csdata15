@@ -1,5 +1,3 @@
-"""Trang quản trị: chạy lại pipeline ETL và đồng bộ dữ liệu lên Supabase."""
-
 import streamlit as st
 
 from movie_analytics.auth import require_login
@@ -15,7 +13,6 @@ settings = get_settings()
 st.title("⚙️ Quản trị dữ liệu / Data admin")
 st.caption("Vận hành pipeline ETL: Extract từ CSV → Transform bằng Pandas → Load lên Supabase.")
 
-# --- Trạng thái hệ thống --------------------------------------------------
 st.subheader("Trạng thái hệ thống / System status")
 
 cols = st.columns(4)
@@ -33,7 +30,6 @@ if not settings.supabase_ready:
 
 st.divider()
 
-# --- Bước 1: Extract & Transform -----------------------------------------
 st.subheader("Bước 1 - Extract & Transform")
 
 if st.button("Chạy lại pipeline làm sạch dữ liệu", width="stretch"):
@@ -53,7 +49,6 @@ with st.expander("Xem 20 dòng dữ liệu gốc"):
 
 st.divider()
 
-# --- Bước 2: Load lên Supabase -------------------------------------------
 st.subheader("Bước 2 - Load lên Supabase")
 
 st.warning(
@@ -91,7 +86,6 @@ if st.button("Kiểm tra dữ liệu trên Supabase", width="stretch"):
 
 st.divider()
 
-# --- Hướng dẫn thiết lập --------------------------------------------------
 st.subheader("Hướng dẫn thiết lập Supabase / Setup guide")
 st.markdown(
     """

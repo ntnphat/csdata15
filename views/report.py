@@ -1,5 +1,3 @@
-"""Trang xuất báo cáo Excel và lưu bộ lọc phân tích lên Supabase."""
-
 from datetime import datetime
 
 import streamlit as st
@@ -30,7 +28,6 @@ st.title("📥 Xuất báo cáo / Report export")
 kpi_row(df)
 st.divider()
 
-# --- Xuất Excel -----------------------------------------------------------
 st.subheader("Báo cáo Excel nhiều sheet / Multi-sheet Excel report")
 
 col_opt, col_rows = st.columns([2, 1])
@@ -74,7 +71,6 @@ if st.session_state.get("report_buffer"):
 
 st.divider()
 
-# --- Xuất CSV -------------------------------------------------------------
 st.subheader("Tải dữ liệu thô đã lọc / Filtered dataset")
 st.download_button(
     "⬇️ Tải CSV dữ liệu đang lọc",
@@ -85,7 +81,6 @@ st.download_button(
 
 st.divider()
 
-# --- Lưu bộ lọc lên Supabase ---------------------------------------------
 st.subheader("Bộ lọc đã lưu / Saved views")
 
 if is_guest():
@@ -128,7 +123,6 @@ else:
 
 st.divider()
 
-# --- Xem trước nội dung báo cáo -------------------------------------------
 st.subheader("Xem trước nội dung báo cáo / Report preview")
 preview_tabs = st.tabs(["Thể loại", "Tầng ngân sách", "Mùa phát hành", "Pareto", "Xu hướng năm"])
 

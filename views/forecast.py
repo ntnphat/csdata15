@@ -1,5 +1,3 @@
-"""Trang mô hình dự báo doanh thu trước phát hành và mô phỏng kịch bản đầu tư."""
-
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -84,7 +82,6 @@ st.markdown(
 
 st.divider()
 
-# --- Mô phỏng kịch bản ----------------------------------------------------
 st.subheader("Mô phỏng kịch bản đầu tư / Scenario simulator")
 
 with st.form("scenario"):

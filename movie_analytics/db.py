@@ -1,8 +1,3 @@
-"""Tầng dữ liệu: kết nối Supabase, nạp dữ liệu phim và lưu trạng thái người dùng.
-
-App luôn chạy được: nếu chưa cấu hình Supabase thì tự động lùi về dữ liệu cục bộ.
-"""
-
 from __future__ import annotations
 
 import json
@@ -20,7 +15,6 @@ VIEWS_TABLE = "saved_views"
 CHAT_TABLE = "chat_logs"
 PROFILES_TABLE = "profiles"
 
-# Các cột được đồng bộ lên Supabase (bỏ cột trung gian chỉ dùng khi tính toán).
 SYNC_COLUMNS = [
     "name", "rating", "rating_group", "genre", "year", "year_reported", "release_date",
     "release_month", "season", "decade", "score", "votes", "director", "writer", "star",
@@ -28,16 +22,16 @@ SYNC_COLUMNS = [
     "profit_real", "multiple", "roi", "has_financials", "is_profitable_real", "budget_tier",
 ]
 
-# Các cột khai kiểu integer trong sql/schema.sql.
+
+# Cot integer trong schema. Pandas ep chung thanh float khi co gia tri thieu,
+# PostgREST se tu choi gia tri dang "6.0".
 INT_COLUMNS = ["year", "year_reported", "release_month", "decade"]
 
 
 class SupabaseUnavailable(RuntimeError):
-    """Không có thư viện supabase hoặc thiếu thông tin kết nối."""
-
+    pass
 
 def get_client(use_service_key: bool = False):
-    """Khởi tạo Supabase client. Ném SupabaseUnavailable nếu chưa sẵn sàng."""
     settings = get_settings()
     if not settings.supabase_ready:
         raise SupabaseUnavailable("Chưa cấu hình SUPABASE_URL / SUPABASE_ANON_KEY.")
@@ -59,16 +53,11 @@ def is_supabase_ready() -> bool:
         return False
 
 
-# --- Dữ liệu phim ---------------------------------------------------------
-
 def _prepare_for_upload(df: pd.DataFrame) -> list[dict]:
-    """Chuẩn hóa DataFrame thành list dict tương thích kiểu JSON của PostgREST."""
     out = df[[c for c in SYNC_COLUMNS if c in df.columns]].copy()
     out["release_date"] = out["release_date"].dt.strftime("%Y-%m-%d")
     out["budget_tier"] = out["budget_tier"].astype("string")
 
-    # Cột nào khai integer trong schema thì phải gửi số nguyên. Pandas ép các cột này
-    # thành float khi có giá trị thiếu, khiến PostgREST từ chối giá trị dạng "6.0".
     for column in INT_COLUMNS:
         if column in out:
             out[column] = out[column].astype("Int64")
@@ -78,7 +67,6 @@ def _prepare_for_upload(df: pd.DataFrame) -> list[dict]:
 
 
 def upload_movies(df: pd.DataFrame, batch_size: int = 500) -> int:
-    """Load: đẩy dữ liệu đã làm sạch lên bảng movies theo từng lô."""
     client = get_client(use_service_key=True)
     records = _prepare_for_upload(df)
 
@@ -89,7 +77,6 @@ def upload_movies(df: pd.DataFrame, batch_size: int = 500) -> int:
 
 
 def fetch_movies_from_supabase(page_size: int = 1000) -> pd.DataFrame:
-    """Đọc toàn bộ bảng movies, phân trang vì PostgREST giới hạn số dòng mỗi lần."""
     client = get_client()
     frames, start = [], 0
     while True:
@@ -111,11 +98,6 @@ def fetch_movies_from_supabase(page_size: int = 1000) -> pd.DataFrame:
 
 
 def restore_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Tính lại các cột phái sinh rẻ thay vì lưu chúng trên Supabase.
-
-    Bảng `movies` chỉ lưu dữ kiện; các cột suy ra được từ dữ kiện đó (cờ nhị phân,
-    biến logarit) được dựng lại khi đọc để bảng gọn và tránh dữ liệu mâu thuẫn.
-    """
     if "multiple" in df:
         df["is_profitable_naive"] = df["multiple"] > 1
     if {"year", "year_reported"} <= set(df.columns):
@@ -128,7 +110,6 @@ def restore_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_local_dataset() -> pd.DataFrame:
-    """Đọc bản sạch trong outputs/, tự chạy lại ETL nếu chưa có."""
     if CLEAN_PARQUET.exists():
         try:
             return pd.read_parquet(CLEAN_PARQUET)
@@ -142,7 +123,6 @@ def load_local_dataset() -> pd.DataFrame:
 
 
 def load_dataset(prefer_supabase: bool = True) -> tuple[pd.DataFrame, str]:
-    """Nạp dữ liệu cho toàn app. Trả về (DataFrame, nguồn dữ liệu)."""
     if prefer_supabase:
         try:
             df = fetch_movies_from_supabase()
@@ -153,10 +133,7 @@ def load_dataset(prefer_supabase: bool = True) -> tuple[pd.DataFrame, str]:
     return load_local_dataset(), "local"
 
 
-# --- Trạng thái người dùng ------------------------------------------------
-
 def save_view(client, user_id: str, name: str, filters: dict[str, Any]) -> None:
-    """Lưu một bộ lọc phân tích của người dùng."""
     client.table(VIEWS_TABLE).insert(
         {"user_id": user_id, "view_name": name, "filters": filters}
     ).execute()
@@ -178,7 +155,6 @@ def delete_view(client, view_id: str) -> None:
 
 
 def log_chat(client, user_id: str, question: str, answer: str) -> None:
-    """Ghi lại hội thoại với trợ lý AI để phục vụ đánh giá chất lượng."""
     client.table(CHAT_TABLE).insert(
         {"user_id": user_id, "question": question, "answer": answer}
     ).execute()

@@ -1,10 +1,3 @@
-"""Trợ lý phân tích bằng LangChain + OpenAI.
-
-Cách tiếp cận: không để mô hình tự sinh code chạy trên dữ liệu, mà nạp sẵn các
-bảng tổng hợp đã tính bằng Pandas làm NGỮ CẢNH. Con số luôn do Pandas tính,
-mô hình chỉ diễn giải - nhờ vậy tránh được nguy cơ bịa số và rủi ro thực thi code.
-"""
-
 from __future__ import annotations
 
 import pandas as pd
@@ -58,7 +51,6 @@ SUGGESTED_QUESTIONS = [
 
 
 def is_available() -> bool:
-    """Kiểm tra đã có API key và thư viện LangChain hay chưa."""
     if not get_settings().openai_ready:
         return False
     try:
@@ -69,7 +61,6 @@ def is_available() -> bool:
 
 
 def _table_to_markdown(df: pd.DataFrame, title: str, rows: int = MAX_ROWS_PER_TABLE) -> str:
-    """Rút gọn và định dạng một bảng tổng hợp thành markdown cho prompt."""
     if df is None or df.empty:
         return ""
     numeric = df.select_dtypes("number").columns
@@ -79,7 +70,6 @@ def _table_to_markdown(df: pd.DataFrame, title: str, rows: int = MAX_ROWS_PER_TA
 
 
 def build_context(df: pd.DataFrame) -> str:
-    """Đóng gói toàn bộ số liệu cần thiết thành một khối ngữ cảnh duy nhất."""
     kpi = metrics.kpi_summary(df)
     header = (
         "### Tổng quan\n"
@@ -111,22 +101,24 @@ def build_context(df: pd.DataFrame) -> str:
 
 
 def _build_chain(template: str):
-    """Dựng chain LangChain: prompt -> model -> parser."""
     from langchain_core.output_parsers import StrOutputParser
     from langchain_core.prompts import PromptTemplate
     from langchain_openai import ChatOpenAI
 
     settings = get_settings()
-    model = ChatOpenAI(
-        model=settings.openai_model,
-        temperature=0.1,
-        api_key=settings.openai_api_key,
-    )
+    options = {
+        "model": settings.openai_model,
+        "temperature": 0.1,
+        "api_key": settings.openai_api_key,
+    }
+    if settings.openai_base_url:
+        options["base_url"] = settings.openai_base_url
+
+    model = ChatOpenAI(**options)
     return PromptTemplate.from_template(template) | model | StrOutputParser()
 
 
 def ask(df: pd.DataFrame, question: str, context: str = None) -> str:
-    """Trả lời câu hỏi của người dùng dựa trên số liệu đã lọc."""
     if not is_available():
         return ("Chưa cấu hình OPENAI_API_KEY hoặc chưa cài langchain-openai. "
                 "Vui lòng bổ sung để dùng trợ lý AI.")
@@ -135,7 +127,6 @@ def ask(df: pd.DataFrame, question: str, context: str = None) -> str:
 
 
 def executive_summary(df: pd.DataFrame, context: str = None) -> str:
-    """Sinh phần tóm tắt điều hành tự động cho báo cáo."""
     if not is_available():
         return "Chưa cấu hình OPENAI_API_KEY nên không thể sinh tóm tắt tự động."
     chain = _build_chain(SUMMARY_TEMPLATE)
