@@ -39,6 +39,7 @@ class Settings:
     openai_base_url: str
     openai_model: str
     openai_embedding_model: str
+    admin_emails: tuple[str, ...]
     app_env: str
 
     @property
@@ -60,5 +61,8 @@ def get_settings() -> Settings:
         openai_base_url=_read("OPENAI_BASE_URL"),
         openai_model=_read("OPENAI_MODEL", "gpt-4o-mini"),
         openai_embedding_model=_read("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+        admin_emails=tuple(
+            e.strip().lower() for e in _read("ADMIN_EMAILS").split(",") if e.strip()
+        ),
         app_env=_read("APP_ENV", "local"),
     )

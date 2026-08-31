@@ -164,6 +164,11 @@ lỗi lúc gọi dịch vụ.
 |---|---|---|
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY` | Supabase → Project Settings → API | Đăng nhập, lưu bộ lọc, lưu lịch sử chat, đồng bộ dữ liệu |
 | `OPENAI_API_KEY` | platform.openai.com/api-keys | Trợ lý AI, sinh tóm tắt điều hành |
+| `ADMIN_EMAILS` | tự đặt, cách nhau bằng dấu phẩy | Email được vào trang Quản trị dữ liệu |
+
+`ADMIN_EMAILS` là bắt buộc khi deploy công khai. Trang Quản trị dữ liệu dùng
+`SUPABASE_SERVICE_KEY` để ghi đè bảng `movies`, nên nếu không giới hạn thì bất kỳ ai
+truy cập app cũng xóa được dữ liệu. Để trống thì trang này chỉ mở khi `APP_ENV=local`.
 
 OpenAI API là dịch vụ trả phí, tách khỏi tài khoản ChatGPT. Nếu chưa muốn nạp tiền, trỏ
 `OPENAI_BASE_URL` sang một endpoint tương thích chuẩn OpenAI thì `ChatOpenAI` chạy

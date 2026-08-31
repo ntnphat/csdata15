@@ -1,13 +1,13 @@
 import streamlit as st
 
-from movie_analytics.auth import require_login
+from movie_analytics.auth import require_admin
 from movie_analytics.config import get_settings
 from movie_analytics.constants import CLEAN_CSV, RAW_CSV
 from movie_analytics.db import SupabaseUnavailable, fetch_movies_from_supabase, upload_movies
 from movie_analytics.etl import build_dataset, data_quality_report, load_raw
 from movie_analytics.ui import get_data, get_raw_data, show_table
 
-require_login()
+require_admin()
 settings = get_settings()
 
 st.title("⚙️ Quản trị dữ liệu / Data admin")

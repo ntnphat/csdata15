@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from movie_analytics.config import get_settings
 from movie_analytics.db import SupabaseUnavailable, get_client, upsert_profile
 
 SESSION_USER = "auth_user"
@@ -98,5 +99,22 @@ def require_account() -> dict:
     user = require_login()
     if user.get("is_guest"):
         st.info("Chức năng này cần tài khoản Supabase. Bạn đang ở chế độ khách.")
+        st.stop()
+    return user
+
+
+def require_admin() -> dict:
+    user = require_account()
+    settings = get_settings()
+
+    # Chua khai bao ADMIN_EMAILS thi chi mo khi chay may ca nhan,
+    # de ban deploy cong khai khong bi nguoi la ghi de du lieu.
+    if settings.admin_emails:
+        allowed = user["email"].lower() in settings.admin_emails
+    else:
+        allowed = settings.app_env == "local"
+
+    if not allowed:
+        st.error("Trang này chỉ dành cho tài khoản quản trị.")
         st.stop()
     return user
